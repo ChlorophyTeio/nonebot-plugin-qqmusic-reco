@@ -1,0 +1,16 @@
+{
+  "Default": {
+    "creator": null,
+    "playlists": [
+      "https://y.qq.com/n/ryqq_v2/playlist/7671500210|2",
+      {
+        "id": "9648484751",
+        "weight": 1
+      },
+      {
+        "id": "2359737706",
+        "weight": 2
+      }
+    ]
+  }
+}
