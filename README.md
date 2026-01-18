@@ -7,7 +7,7 @@
 
 # nonebot-plugin-qqmusic-reco
 
-_🎵 QQ音乐多群定时推荐插件，支持可爱话术与灵活推送配置 ✨_
+_🎵 QQ音乐多群定时推荐插件，支持自定义话术与灵活推送配置 ✨_
 
 </div>
 
@@ -21,7 +21,7 @@ _🎵 QQ音乐多群定时推荐插件，支持可爱话术与灵活推送配置
 
 ## 关于插件
 
-适用于 NoneBot2 的 QQ 音乐推荐插件，支持多群定时推送、可爱话术、灵活配置，数据源为 QQ 音乐歌单。
+适用于 NoneBot2 的 QQ 音乐推荐插件，支持多群定时推送、自定义话术、灵活配置，数据源为 QQ 音乐歌单。
 
 ## 安装
 
@@ -39,22 +39,24 @@ pip install nonebot-plugin-qqmusic-reco
 
 ## 快速开始
 
-1. 在 NoneBot2 项目中加载本插件：
+1. 在 NoneBot2 项目中使用 env 配置 (全部不建议配置，配置应当前往各个模块的JSON)：
 
-```python
-from nonebot import require
-require("nonebot_plugin_qqmusic_reco")
+```
+qqmusic_priority=5
+qqmusic_block=True
+qqmusic_max_pool=200
+qqmusic_output_n=3
+qqmusic_seed=114514
+qqmusic_cute_message=True
 ```
 
 2. 配置推荐推送：
 
-- SUPERUSER 可用指令：
+- 指令：
   - `reco sub <推荐名> <模式:时间> <数量>` 订阅本群推荐
   - `reco td` 或 `reco unsub` 取消订阅
   - `reco create <名> <歌单URL,...>` 新建推荐配置
   - `reco del <名>` 删除推荐配置
-  - `reco reload` 重载配置
-- 普通用户：
   - `reco now [数量]` 立即获取推荐
   - `reco list` 查看所有推荐配置
   - `reco help` 查看帮助
@@ -75,7 +77,7 @@ require("nonebot_plugin_qqmusic_reco")
 
 ## 数据存储
 
-插件所有数据（推荐配置、群组配置、可爱话术）均存放于 localstore 数据目录，支持跨平台。
+插件所有数据（推荐配置、群组配置、自定义话术）均存放于 localstore 数据目录，支持跨平台。
 
 ## 依赖
 
