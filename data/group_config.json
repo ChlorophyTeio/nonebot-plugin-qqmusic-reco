@@ -1,0 +1,10 @@
+{
+  "114514": {
+    "group_id": "114514",
+    "enable": true,
+    "reco_name": "Default",
+    "timer_mode": "cron",
+    "timer_value": "8,12,16,16:35,20,0",
+    "output_n": 3
+  }
+}
