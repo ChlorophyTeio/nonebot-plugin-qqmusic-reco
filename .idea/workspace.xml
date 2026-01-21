@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="new" />
+    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="fixed: 无法定时发送的问题">
+      <change beforePath="$PROJECT_DIR$/.idea/nonebot-plugin-qqmusic-reco.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,12 +24,12 @@
     &quot;assignee&quot;: &quot;ChlorophyTeio&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/ChlorophyTeio/nonebot-plugin-qqmusic-reco",
-    "accountId": "bcb30f6e-415c-4896-ba5c-3b28b7605c11"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/ChlorophyTeio/nonebot-plugin-qqmusic-reco&quot;,
+    &quot;accountId&quot;: &quot;bcb30f6e-415c-4896-ba5c-3b28b7605c11&quot;
   }
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -78,6 +83,8 @@
       <workItem from="1768894549318" duration="449000" />
       <workItem from="1768895008746" duration="436000" />
       <workItem from="1768895455467" duration="730000" />
+      <workItem from="1769013552595" duration="105000" />
+      <workItem from="1769014619478" duration="73000" />
     </task>
     <task id="LOCAL-00001" summary="all">
       <option name="closed" value="true" />
@@ -119,7 +126,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768895527200</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fixed: 无法定时发送的问题">
+      <option name="closed" value="true" />
+      <created>1769013574124</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1769013574124</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,6 +154,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="all" />
     <MESSAGE value="new" />
-    <option name="LAST_COMMIT_MESSAGE" value="new" />
+    <MESSAGE value="fixed: 无法定时发送的问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed: 无法定时发送的问题" />
   </component>
 </project>

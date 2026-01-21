@@ -16,8 +16,8 @@ config = get_plugin_config(Config)
 reco_service = QQMusicReco(config)
 
 __plugin_meta__ = PluginMetadata(
-    name="QQ音乐随机推荐",
-    description="支持多群配置、持久化管理及定时可爱话术的音乐推荐插件",
+    name="基于QQ音乐歌单的音乐推荐",
+    description="基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件",
     usage="""指令列表：
 - reco now [数量] : 立即推荐
 - reco list : 查看可用配置
@@ -30,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
     extra={
         "author": "ChlorophyTeio",
-        "version": "0.1.3"
+        "version": "0.1.11"
     }
 )
 
