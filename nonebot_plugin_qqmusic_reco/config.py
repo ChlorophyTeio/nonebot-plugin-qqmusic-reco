@@ -7,4 +7,4 @@ class Config(BaseModel):
     qqmusic_max_pool: int = 200
     qqmusic_output_n: int = 3
     qqmusic_seed: Optional[int] = None
-    qqmusic_cute_message: bool = True  # 是否启用可爱话术
+    qqmusic_cute_message: bool = True

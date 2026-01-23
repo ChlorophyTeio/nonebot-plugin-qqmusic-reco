@@ -30,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
     extra={
         "author": "ChlorophyTeio",
-        "version": "0.1.12"
+        "version": "0.1.13"
     }
 )
 
