@@ -7,9 +7,6 @@ from nonebot import logger
 import nonebot_plugin_localstore as store
 from pathlib import Path
 
-# 定义插件名称，用于获取专属数据目录
-PLUGIN_NAME = "nonebot_plugin_qqmusic_reco"
-
 
 class RecoItem(BaseModel):
     creator: Optional[str] = None
@@ -27,10 +24,12 @@ class GroupSettings(BaseModel):
 
 class ConfigManager:
     def __init__(self):
-        # 1. 获取数据目录 (修复点)
-        self.data_dir = store.get_data_dir(PLUGIN_NAME)
+        # --- 最佳实践修改 ---
+        # 使用 get_plugin_data_dir() 自动获取当前插件的数据目录
+        # 依赖 nonebot-plugin-localstore >= 0.7.0
+        self.data_dir = store.get_plugin_data_dir()
 
-        # 2. 拼接文件路径
+        # 拼接文件路径
         self.reco_file = self.data_dir / "reco_config.json"
         self.group_file = self.data_dir / "group_config.json"
         self.cute_file = self.data_dir / "cute_messages.json"
@@ -95,7 +94,7 @@ class ConfigManager:
 
         serializable = {k: to_dict(v) for k, v in data.items()}
 
-        # 确保父目录存在 (虽然 localstore 通常会创建，但为了保险)
+        # 确保父目录存在
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(file_path, "w", encoding="utf-8") as f:

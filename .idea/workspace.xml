@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="fixed: 无法定时发送的问题">
-      <change beforePath="$PROJECT_DIR$/.idea/nonebot-plugin-qqmusic-reco.iml" beforeDir="false" />
+    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="fixed: 修复get_plugin_data_file问题">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +81,7 @@
       <workItem from="1768895008746" duration="436000" />
       <workItem from="1768895455467" duration="730000" />
       <workItem from="1769013552595" duration="105000" />
-      <workItem from="1769014619478" duration="73000" />
+      <workItem from="1769014619478" duration="2061000" />
     </task>
     <task id="LOCAL-00001" summary="all">
       <option name="closed" value="true" />
@@ -134,7 +131,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769013574124</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="fixed: 修复get_plugin_data_file问题">
+      <option name="closed" value="true" />
+      <created>1769014719841</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1769014719841</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,6 +160,7 @@
     <MESSAGE value="all" />
     <MESSAGE value="new" />
     <MESSAGE value="fixed: 无法定时发送的问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed: 无法定时发送的问题" />
+    <MESSAGE value="fixed: 修复get_plugin_data_file问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed: 修复get_plugin_data_file问题" />
   </component>
 </project>

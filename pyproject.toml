@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-qqmusic-reco"
-version = "0.1.11"
+version = "0.1.12"
 description = "基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件"
 authors = ["ChlorophyTeio <chlorophyimo@gmail.com>"]
 readme = "README.md"
@@ -15,9 +15,9 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.9"
 nonebot2 = "^2.3.0"
-nonebot-adapter-onebot = "^2.2.0"
-nonebot-plugin-apscheduler = "^0.4.0"
-nonebot-plugin-localstore = "^0.6.0"
+nonebot-adapter-onebot = ">=2.2.0"
+nonebot-plugin-apscheduler = ">=0.5.0,<1.0.0"
+nonebot-plugin-localstore = ">=0.7.0,<1.0.0"
 httpx = ">=0.23.0"
 pydantic = ">=1.10.0,<3.0.0"
 
