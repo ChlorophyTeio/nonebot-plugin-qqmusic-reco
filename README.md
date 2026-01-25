@@ -5,9 +5,9 @@
 </div>
 
 <div align="center">
-_🎵 基于QQ音乐歌单的音乐推荐 ✨_
+🎵 基于QQ音乐歌单的音乐推荐 ✨
 <br>
-_基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件_
+基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件
 
 <a href="https://pypi.python.org/pypi/nonebot-plugin-qqmusic-reco">
   <img src="https://img.shields.io/pypi/v/nonebot-plugin-qqmusic-reco.svg" alt="pypi">
@@ -63,8 +63,8 @@ pip install nonebot-plugin-qqmusic-reco
 | `qqmusic_priority` | int | 5 | 插件响应优先级 |
 | `qqmusic_block` | bool | True | 是否阻断后续指令 |
 | `qqmusic_output_n` | int | 3 | 默认每次推荐歌曲数量 |
-| `qqmusic_max_pool` | int | 200 | 获取歌单时的最大歌曲池大小（防止内存溢出） |
-| `qqmusic_cute_message` | bool | True | 是否开启推送时的卖萌话术 |
+| `qqmusic_max_pool` | int | 200 | 获取歌单时的最大歌曲池大小 |
+| `qqmusic_cute_message` | bool | True | 是否开启推送时的自定义话术 |
 | `LOG_LEVEL` | str | INFO | 调试时可设为 DEBUG 查看详细任务添加日志 |
 
 ## 💻 指令使用
@@ -96,7 +96,7 @@ reco create <名称> <歌单链接 或 权重|ID>
 
 ```
 
-* **简单模式**：`reco create 抖音热歌 https://y.qq.com/n/ryqq/playlist/xxxx`
+* **简单模式**：`reco create 我的热歌 https://y.qq.com/n/ryqq/playlist/xxxx`
 * **混合模式（支持权重）**：
 `reco create 混合歌单 2.0|7671500210,1.0|862300123`
 *(表示 2.0 权重的歌单 ID 和 1.0 权重的歌单 ID 混合)*
