@@ -30,15 +30,16 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
     extra={
         "author": "ChlorophyTeio",
-        "version": "0.1.13"
+        "version": "0.1.14"
     }
 )
+
 
 # --- 定时任务逻辑 ---
 def refresh_jobs():
     for job in scheduler.get_jobs():
         if job.id.startswith("reco_push_"): job.remove()
-    
+
     for gid, setting in manager.group_data.items():
         if not setting.enable:
             continue
@@ -61,6 +62,7 @@ def refresh_jobs():
                     except Exception:
                         logger.warning(f"定时配置格式错误: {t}")
                         continue
+
                 async def push(g_id=gid, h=hour, m=minute):
                     s = manager.group_data.get(g_id)
                     if not s:
@@ -80,12 +82,14 @@ def refresh_jobs():
                             await bot.send_group_msg(group_id=int(g_id), message=await_msg)
                         except Exception:
                             pass
-                    msg = await reco_service.get_recommendation(manager.reco_data.get(s.reco_name).playlists, s.output_n)
+                    msg = await reco_service.get_recommendation(manager.reco_data.get(s.reco_name).playlists,
+                                                                s.output_n)
                     for bot in get_bots().values():
                         try:
                             await bot.send_group_msg(group_id=int(g_id), message=msg)
                         except Exception:
                             pass
+
                 scheduler.add_job(
                     push,
                     id=f"reco_push_{gid}_{idx}",
@@ -101,6 +105,7 @@ def refresh_jobs():
             except Exception:
                 logger.warning(f"interval 配置格式错误: {setting.timer_value}")
                 continue
+
             async def push(g_id=gid):
                 s = manager.group_data.get(g_id)
                 if not s:
@@ -124,6 +129,7 @@ def refresh_jobs():
                         await bot.send_group_msg(group_id=int(g_id), message=msg)
                     except Exception:
                         pass
+
             scheduler.add_job(
                 push,
                 id=f"reco_push_{gid}",
@@ -132,16 +138,18 @@ def refresh_jobs():
                 misfire_grace_time=60
             )
 
+
 get_driver().on_startup(refresh_jobs)
 
 # --- 指令处理 ---
 reco_cmd = on_command("reco", priority=config.qqmusic_priority, block=config.qqmusic_block)
 
+
 @reco_cmd.handle()
 async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     msg_txt = arg.extract_plain_text().strip().split()
     if not msg_txt: await reco_cmd.finish("请输入指令参数，或发送 reco help")
-    
+
     sub_cmd = msg_txt[0].lower()
     user_id = str(event.user_id)
     is_su = await SUPERUSER(bot, event)
@@ -150,42 +158,61 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     if sub_cmd == "now":
         # 指令触发，始终用固定话术
         await reco_cmd.send("让我思考一下推荐什么喵...")
-        count = int(msg_txt[1]) if len(msg_txt)>1 and msg_txt[1].isdigit() else config.qqmusic_output_n
+        count = int(msg_txt[1]) if len(msg_txt) > 1 and msg_txt[1].isdigit() else config.qqmusic_output_n
         reco_name = "Default"
         if isinstance(event, GroupMessageEvent):
             g_set = manager.group_data.get(str(event.group_id))
             if g_set: reco_name = g_set.reco_name
-        playlists = manager.reco_data.get(reco_name).playlists if reco_name in manager.reco_data else manager.reco_data["Default"].playlists
+        playlists = manager.reco_data.get(reco_name).playlists if reco_name in manager.reco_data else manager.reco_data[
+            "Default"].playlists
         res = await reco_service.get_recommendation(playlists, count)
         await reco_cmd.finish(res)
 
     # 2. reco reload (SUPERUSER ONLY)
     elif sub_cmd == "reload":
         if not is_su: await reco_cmd.finish("⛔ 权限不足：仅限 SUPERUSER 使用。")
-        manager.load_all(); refresh_jobs()
+        manager.load_all();
+        refresh_jobs()
         await reco_cmd.finish("✅ 配置已重载，定时任务已刷新。")
 
     # 3. reco sub <推荐名> <模式:时间> <数量> (SUPERUSER ONLY)
     elif sub_cmd == "sub":
-        if not is_su: await reco_cmd.finish("⛔ 权限不足：仅限 SUPERUSER 使用。")
-        if not isinstance(event, GroupMessageEvent): await reco_cmd.finish("❌ 请在群聊中使用此指令。")
-        
-        name = msg_txt[1] if len(msg_txt)>1 else "Default"
-        timer = msg_txt[2] if len(msg_txt)>2 else "cron:8,12,18"
-        num = int(msg_txt[3]) if len(msg_txt)>3 and msg_txt[3].isdigit() else 3
-        
+        if not is_su:
+            await reco_cmd.finish("⛔ 权限不足：仅限 SUPERUSER 使用。")
+        if not isinstance(event, GroupMessageEvent):
+            await reco_cmd.finish("❌ 请在群聊中使用此指令。")
+
+        gid = str(event.group_id)
+
+        # --- 新增校验逻辑 ---
+        if gid in manager.group_data:
+            await reco_cmd.finish("⚠️ 本群已订阅，请使用 reco td 或 reco unsub 取消订阅后再重新设置。")
+        # ------------------
+
+        name = msg_txt[1] if len(msg_txt) > 1 else "Default"
+        timer = msg_txt[2] if len(msg_txt) > 2 else "cron:8,12,18"
+        num = int(msg_txt[3]) if len(msg_txt) > 3 and msg_txt[3].isdigit() else 3
+
         mode, val = timer.split(":", 1) if ":" in timer else ("cron", timer)
-        manager.group_data[str(event.group_id)] = GroupSettings(
-            group_id=str(event.group_id), reco_name=name, timer_mode=mode, timer_value=val, output_n=num
+
+        # 检查推荐配置是否存在
+        if name not in manager.reco_data:
+            await reco_cmd.finish(f"❌ 推荐配置 '{name}' 不存在，请先使用 reco create 创建。")
+
+        manager.group_data[gid] = GroupSettings(
+            group_id=gid, reco_name=name, timer_mode=mode, timer_value=val, output_n=num
         )
-        manager.save_group(); refresh_jobs()
+        manager.save_group()
+        refresh_jobs()
         await reco_cmd.finish(f"✅ 订阅成功！\n推荐配置：{name}\n定时：{mode}({val})\n每轮数量：{num}")
 
     # 4. reco unsub / td
     elif sub_cmd in ["unsub", "td"]:
         gid = str(event.group_id)
         if gid in manager.group_data:
-            del manager.group_data[gid]; manager.save_group(); refresh_jobs()
+            del manager.group_data[gid];
+            manager.save_group();
+            refresh_jobs()
             await reco_cmd.finish("✅ 已取消本群订阅。")
         await reco_cmd.finish("❌ 本群尚未订阅。")
 
@@ -205,8 +232,9 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
 
     # 7. reco list / help
     elif sub_cmd == "list":
-        await reco_cmd.finish("📜 可用推荐列表：\n" + "\n".join([f"- {k} (创建者:{v.creator or 'admin'})" for k,v in manager.reco_data.items()]))
-    
+        await reco_cmd.finish("📜 可用推荐列表：\n" + "\n".join(
+            [f"- {k} (创建者:{v.creator or 'admin'})" for k, v in manager.reco_data.items()]))
+
     elif sub_cmd == "help":
         await reco_cmd.finish(
             "🎵 QQ音乐推荐指令帮助：\n"

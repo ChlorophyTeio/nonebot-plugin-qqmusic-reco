@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-qqmusic-reco"
-version = "0.1.13"
+version = "0.1.14"
 description = "基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件"
 authors = ["ChlorophyTeio <chlorophyimo@gmail.com>"]
 readme = "README.md"
