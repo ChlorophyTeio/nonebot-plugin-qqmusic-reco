@@ -24,9 +24,7 @@ class GroupSettings(BaseModel):
 
 class ConfigManager:
     def __init__(self):
-        # --- 最佳实践修改 ---
-        # 使用 get_plugin_data_dir() 自动获取当前插件的数据目录
-        # 依赖 nonebot-plugin-localstore >= 0.7.0
+        # 获取当前插件的数据目录
         self.data_dir = store.get_plugin_data_dir()
 
         # 拼接文件路径
@@ -41,14 +39,13 @@ class ConfigManager:
         self.load_all()
 
     def load_cute_messages(self) -> list:
-        # 如果文件不存在，返回空列表
         if not self.cute_file.exists():
             return []
         try:
             with open(self.cute_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"加载可爱话术失败: {e}")
+            logger.error(f"[QQMusicReco] 加载可爱话术失败: {e}")
             return []
 
     def load_all(self):
@@ -67,8 +64,8 @@ class ConfigManager:
                 raw_reco = json.load(f)
                 self.reco_data = {k: RecoItem(**v) for k, v in raw_reco.items()}
         except Exception as e:
-            logger.error(f"加载推荐配置失败: {e}")
-            self.reco_data = {}
+            logger.error(f"[QQMusicReco] ❌ 加载推荐配置(reco_config.json)失败: {e}。将保留内存中的旧配置。")
+            # 不进行重置，防止文件损坏导致数据清空
 
         # 2. 加载群订阅配置
         if not self.group_file.exists():
@@ -79,22 +76,20 @@ class ConfigManager:
                 raw_group = json.load(f)
                 self.group_data = {gid: GroupSettings(**s) for gid, s in raw_group.items()}
         except Exception as e:
-            logger.error(f"加载群配置失败: {e}")
-            self.group_data = {}
+            logger.error(f"[QQMusicReco] ❌ 加载群配置(group_config.json)失败: {e}。将保留内存中的旧配置。")
+            # 不进行重置
 
         # 3. 加载可爱话术
         self.cute_config = self.load_cute_messages()
+        logger.info(f"[QQMusicReco] 配置加载完成: {len(self.group_data)} 个群订阅, {len(self.reco_data)} 个推荐单。")
 
     def _save_json(self, file_path, data):
-        # 兼容 Pydantic v1/v2
         def to_dict(obj):
             if hasattr(obj, "model_dump"): return obj.model_dump()
             if hasattr(obj, "dict"): return obj.dict()
             return obj
 
         serializable = {k: to_dict(v) for k, v in data.items()}
-
-        # 确保父目录存在
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(file_path, "w", encoding="utf-8") as f:
@@ -126,7 +121,6 @@ class ConfigManager:
     def pick_cute_message(self, now: datetime = None) -> Optional[str]:
         """根据当前时间段选择并随机返回一条话术"""
         if not self.cute_config:
-            # 尝试重新加载
             self.cute_config = self.load_cute_messages()
             if not self.cute_config:
                 return None
@@ -140,18 +134,17 @@ class ConfigManager:
             try:
                 st = time.fromisoformat(item["start_time"])
                 et = time.fromisoformat(item["end_time"])
-                # 判断当前时间是否在区间内 (支持跨天)
                 in_range = False
                 if st <= et:
                     in_range = st <= now_time < et
                 else:
-                    # 跨天，例如 22:00 到 06:00
+                    # 跨天
                     in_range = now_time >= st or now_time < et
 
                 if in_range:
                     candidates.extend(item.get("messages", []))
             except Exception as e:
-                logger.warning(f"Cute message config parsing error: {e}")
+                logger.warning(f"[QQMusicReco] 话术时间解析错误: {e}")
 
         if candidates:
             return random.choice(candidates)

@@ -3,6 +3,7 @@ from nonebot.plugin import PluginMetadata
 from nonebot.adapters.onebot.v11 import Bot, Message, GroupMessageEvent, MessageEvent
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
+from datetime import datetime
 
 require("nonebot_plugin_apscheduler")
 require("nonebot_plugin_localstore")
@@ -30,113 +31,140 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
     extra={
         "author": "ChlorophyTeio",
-        "version": "0.1.14"
+        "version": "0.1.15"
     }
 )
 
 
 # --- 定时任务逻辑 ---
 def refresh_jobs():
-    for job in scheduler.get_jobs():
-        if job.id.startswith("reco_push_"): job.remove()
+    # [修改点 1] 降级为 DEBUG：详细的开始时间和系统时间只在调试时需要
+    logger.debug(f"[QQMusicReco] 正在刷新定时任务... 当前系统时间: {datetime.now()}")
 
+    # 1. 清理旧任务
+    removed_count = 0
+    for job in scheduler.get_jobs():
+        if job.id.startswith("reco_push_"):
+            job.remove()
+            removed_count += 1
+
+    if removed_count > 0:
+        # 保持 DEBUG
+        logger.debug(f"[QQMusicReco] 已清理 {removed_count} 个旧定时任务")
+
+    # 2. 添加新任务
+    count_added = 0
     for gid, setting in manager.group_data.items():
         if not setting.enable:
             continue
+
         if setting.timer_mode == "cron":
             # 支持 timer_value: "8,12,16:30,20,0"
-            time_points = [t.strip() for t in str(setting.timer_value).split(",") if t.strip()]
+            raw_times = str(setting.timer_value).replace("，", ",")  # 兼容中文逗号
+            time_points = [t.strip() for t in raw_times.split(",") if t.strip()]
+
             for idx, t in enumerate(time_points):
-                if ":" in t:
-                    hour, minute = t.split(":", 1)
-                    try:
-                        hour = int(hour)
-                        minute = int(minute)
-                    except Exception:
-                        logger.warning(f"定时配置格式错误: {t}")
-                        continue
-                else:
-                    try:
+                try:
+                    if ":" in t:
+                        hour_str, minute_str = t.split(":", 1)
+                        hour = int(hour_str)
+                        minute = int(minute_str)
+                    else:
                         hour = int(t)
                         minute = 0
-                    except Exception:
-                        logger.warning(f"定时配置格式错误: {t}")
-                        continue
+                except ValueError:
+                    logger.error(f"[QQMusicReco] 群 {gid} 定时格式错误: '{t}'，已跳过")
+                    continue
 
+                # 使用闭包参数锁定变量 h=hour, m=minute
                 async def push(g_id=gid, h=hour, m=minute):
                     s = manager.group_data.get(g_id)
-                    if not s:
-                        return
-                    cute_msg = None
-                    if config.qqmusic_cute_message and s.timer_mode == "cron":
-                        from .manager import pick_cute_message
-                        from datetime import datetime, time as dtime
-                        now = datetime.now().replace(hour=h, minute=m, second=0, microsecond=0)
-                        cute_msg = pick_cute_message(now=now)
-                    if cute_msg:
-                        await_msg = cute_msg
-                    else:
-                        await_msg = "让我思考一下推荐什么喵..."
-                    for bot in get_bots().values():
-                        try:
-                            await bot.send_group_msg(group_id=int(g_id), message=await_msg)
-                        except Exception:
-                            pass
-                    msg = await reco_service.get_recommendation(manager.reco_data.get(s.reco_name).playlists,
-                                                                s.output_n)
-                    for bot in get_bots().values():
-                        try:
-                            await bot.send_group_msg(group_id=int(g_id), message=msg)
-                        except Exception:
-                            pass
+                    if not s: return
 
+                    # 获取可爱文案
+                    cute_msg = None
+                    if config.qqmusic_cute_message:
+                        try:
+                            # 构造当前触发的时间点用于判断文案区间
+                            now_trigger = datetime.now().replace(hour=h, minute=m, second=0, microsecond=0)
+                            cute_msg = manager.pick_cute_message(now=now_trigger)
+                        except Exception as e:
+                            logger.warning(f"[QQMusicReco] 获取文案失败: {e}")
+
+                    await_msg = cute_msg if cute_msg else "让我思考一下推荐什么喵..."
+
+                    bots = get_bots()
+                    if not bots:
+                        logger.warning(f"[QQMusicReco] 定时任务触发(群{g_id})，但没有连接的 Bot")
+                        return
+
+                    for bot in bots.values():
+                        try:
+                            # 1. 发送提示语
+                            await bot.send_group_msg(group_id=int(g_id), message=await_msg)
+
+                            # 2. 获取并发送歌曲
+                            reco_config = manager.reco_data.get(s.reco_name)
+                            if not reco_config:
+                                await bot.send_group_msg(group_id=int(g_id), message=f"❌ 找不到推荐配置: {s.reco_name}")
+                                return
+
+                            msg = await reco_service.get_recommendation(reco_config.playlists, s.output_n)
+                            await bot.send_group_msg(group_id=int(g_id), message=msg)
+                            logger.info(f"[QQMusicReco] 群 {g_id} 定时推送 ({h:02d}:{m:02d}) 完成")
+                        except Exception as e:
+                            logger.warning(f"[QQMusicReco] 群 {g_id} 推送异常: {e}")
+
+                job_id = f"reco_push_{gid}_{idx}"
                 scheduler.add_job(
                     push,
-                    id=f"reco_push_{gid}_{idx}",
+                    id=job_id,
                     trigger="cron",
                     hour=hour,
                     minute=minute,
                     misfire_grace_time=60
                 )
+                count_added += 1
+                # [修改点 2] 降级为 DEBUG：每个任务的添加细节只在调试时查看
+                logger.debug(f"[QQMusicReco] 添加任务: 群[{gid}] 时间[{hour:02d}:{minute:02d}] ID[{job_id}]")
+
         else:
-            # interval 模式保持原样
+            # interval 模式
             try:
                 minutes = int(setting.timer_value)
             except Exception:
                 logger.warning(f"interval 配置格式错误: {setting.timer_value}")
                 continue
 
-            async def push(g_id=gid):
+            async def push_interval(g_id=gid):
                 s = manager.group_data.get(g_id)
-                if not s:
-                    return
-                cute_msg = None
-                if config.qqmusic_cute_message and s.timer_mode == "cron":
-                    from .manager import pick_cute_message
-                    cute_msg = pick_cute_message()
-                if cute_msg:
-                    await_msg = cute_msg
-                else:
-                    await_msg = "让我思考一下推荐什么喵..."
-                for bot in get_bots().values():
+                if not s: return
+
+                cute_msg = manager.pick_cute_message() if config.qqmusic_cute_message else None
+                await_msg = cute_msg if cute_msg else "让我思考一下推荐什么喵..."
+
+                bots = get_bots()
+                for bot in bots.values():
                     try:
                         await bot.send_group_msg(group_id=int(g_id), message=await_msg)
-                    except Exception:
-                        pass
-                msg = await reco_service.get_recommendation(manager.reco_data.get(s.reco_name).playlists, s.output_n)
-                for bot in get_bots().values():
-                    try:
-                        await bot.send_group_msg(group_id=int(g_id), message=msg)
+                        reco_config = manager.reco_data.get(s.reco_name)
+                        if reco_config:
+                            msg = await reco_service.get_recommendation(reco_config.playlists, s.output_n)
+                            await bot.send_group_msg(group_id=int(g_id), message=msg)
                     except Exception:
                         pass
 
             scheduler.add_job(
-                push,
+                push_interval,
                 id=f"reco_push_{gid}",
                 trigger="interval",
                 minutes=minutes,
                 misfire_grace_time=60
             )
+            count_added += 1
+
+    # [保持点] 这个是 INFO，符合你的要求（保留总结性日志）
+    logger.info(f"[QQMusicReco] 定时任务加载完毕，共 {count_added} 个任务。")
 
 
 get_driver().on_startup(refresh_jobs)
@@ -156,22 +184,28 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
 
     # 1. reco now [N]
     if sub_cmd == "now":
-        # 指令触发，始终用固定话术
         await reco_cmd.send("让我思考一下推荐什么喵...")
         count = int(msg_txt[1]) if len(msg_txt) > 1 and msg_txt[1].isdigit() else config.qqmusic_output_n
         reco_name = "Default"
         if isinstance(event, GroupMessageEvent):
             g_set = manager.group_data.get(str(event.group_id))
             if g_set: reco_name = g_set.reco_name
-        playlists = manager.reco_data.get(reco_name).playlists if reco_name in manager.reco_data else manager.reco_data[
-            "Default"].playlists
-        res = await reco_service.get_recommendation(playlists, count)
+
+        target_reco = manager.reco_data.get(reco_name)
+        # 如果找不到群配置的名称，回退到 Default
+        if not target_reco and "Default" in manager.reco_data:
+            target_reco = manager.reco_data["Default"]
+
+        if not target_reco:
+            await reco_cmd.finish("❌ 没有任何可用的推荐配置。")
+
+        res = await reco_service.get_recommendation(target_reco.playlists, count)
         await reco_cmd.finish(res)
 
     # 2. reco reload (SUPERUSER ONLY)
     elif sub_cmd == "reload":
         if not is_su: await reco_cmd.finish("⛔ 权限不足：仅限 SUPERUSER 使用。")
-        manager.load_all();
+        manager.load_all()
         refresh_jobs()
         await reco_cmd.finish("✅ 配置已重载，定时任务已刷新。")
 
@@ -184,10 +218,9 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
 
         gid = str(event.group_id)
 
-        # --- 新增校验逻辑 ---
+        # --- 校验逻辑：防止重复覆盖 ---
         if gid in manager.group_data:
             await reco_cmd.finish("⚠️ 本群已订阅，请使用 reco td 或 reco unsub 取消订阅后再重新设置。")
-        # ------------------
 
         name = msg_txt[1] if len(msg_txt) > 1 else "Default"
         timer = msg_txt[2] if len(msg_txt) > 2 else "cron:8,12,18"
@@ -197,7 +230,8 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
 
         # 检查推荐配置是否存在
         if name not in manager.reco_data:
-            await reco_cmd.finish(f"❌ 推荐配置 '{name}' 不存在，请先使用 reco create 创建。")
+            await reco_cmd.finish(
+                f"❌ 推荐配置 '{name}' 不存在，请先使用 reco create 创建。\n可用列表: {', '.join(manager.reco_data.keys())}")
 
         manager.group_data[gid] = GroupSettings(
             group_id=gid, reco_name=name, timer_mode=mode, timer_value=val, output_n=num
@@ -210,8 +244,8 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     elif sub_cmd in ["unsub", "td"]:
         gid = str(event.group_id)
         if gid in manager.group_data:
-            del manager.group_data[gid];
-            manager.save_group();
+            del manager.group_data[gid]
+            manager.save_group()
             refresh_jobs()
             await reco_cmd.finish("✅ 已取消本群订阅。")
         await reco_cmd.finish("❌ 本群尚未订阅。")

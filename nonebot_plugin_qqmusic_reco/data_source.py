@@ -6,11 +6,12 @@ from .config import Config
 
 PLAYLIST_ID_RE = re.compile(r"/playlist/(\d{5,})|disstid=(\d{5,})|id=(\d{5,})")
 
+
 class QQMusicReco:
     def __init__(self, config: Config):
         self.global_cfg = config
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36", 
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
             "Referer": "https://y.qq.com/",
             "Accept": "application/json"
         }
@@ -43,7 +44,7 @@ class QQMusicReco:
         if self.global_cfg.qqmusic_seed is not None:
             random.seed(self.global_cfg.qqmusic_seed)
         else:
-            random.seed() 
+            random.seed()
 
         all_songs = []
         weights_map = {}
@@ -59,11 +60,11 @@ class QQMusicReco:
                 if "|" in p_str:
                     parts = p_str.rsplit("|", 1)
                     p_str = parts[0]
-                    try: 
+                    try:
                         weight = float(parts[1])
-                    except ValueError: 
+                    except ValueError:
                         weight = 1.0
-            
+
             disstid = self._extract_id(p_str)
             if disstid:
                 weights_map[disstid] = weight
@@ -72,7 +73,7 @@ class QQMusicReco:
                     s["source_id"] = disstid
                     all_songs.append(s)
 
-        if not all_songs: 
+        if not all_songs:
             return "❌ 无法获取歌曲数据，请检查歌单配置。"
 
         # 2. 池化与截断
@@ -89,38 +90,35 @@ class QQMusicReco:
             by_pid.setdefault(pid, []).append(s)
 
         picked = []
-        # 过滤掉权重为0或者没有获取到歌曲的歌单ID
         pids = [p for p in by_pid.keys() if weights_map.get(p, 1.0) > 0]
-        
-        if not pids: 
+
+        if not pids:
             return "❌ 有效歌单为空。"
 
         final_output_n = max(1, min(output_n, len(pool)))
-        
+
         # 4. 加权随机抽取
         for _ in range(final_output_n):
-            # 动态计算当前还有剩余歌曲的歌单及其权重
             live_options = [(p, weights_map.get(p, 1.0)) for p in pids if by_pid.get(p)]
-            if not live_options: 
+            if not live_options:
                 break
-            
+
             lpids, lweights = zip(*live_options)
             target_pid = random.choices(lpids, weights=lweights, k=1)[0]
-            
-            # 从选中歌单随机取一首并移除（防止重复）
+
             target_list = by_pid[target_pid]
             picked_song = target_list.pop(random.randrange(len(target_list)))
             picked.append(picked_song)
 
-        # 5. 格式化输出 (移除标题行)
+        # 5. 格式化输出
         res = []
         for i, s in enumerate(picked, 1):
             singers = " / ".join([str(si.get("name", "未知")) for si in s.get("singer", [])])
             song_name = s.get('songname', '未知曲目')
             mid = s.get('songmid', '')
             link = f"https://y.qq.com/n/ryqq/songDetail/{mid}" if mid else "无需链接"
-            
+
             res.append(f"{i}. {song_name} - {singers}")
             res.append(f"   {link}")
-        
+
         return "\n".join(res)
