@@ -6,6 +6,7 @@
 
 <div align="center">
 _🎵 基于QQ音乐歌单的音乐推荐 ✨_
+<br>
 _基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义话术的音乐推荐插件_
 
 <a href="https://pypi.python.org/pypi/nonebot-plugin-qqmusic-reco">
@@ -16,6 +17,8 @@ _基于QQ音乐歌单，支持多群配置、持久化管理及定时自定义�
 <a href="https://github.com/ChlorophyTeio/nonebot-plugin-qqmusic-reco/blob/main/LICENSE">
   <img src="https://img.shields.io/github/license/ChlorophyTeio/nonebot-plugin-qqmusic-reco.svg" alt="license">
 </a>
+
+</div>
 
 ## 📖 简介
 
@@ -39,6 +42,8 @@ nb plugin install nonebot-plugin-qqmusic-reco
 
 ```
 
+</details>
+
 <details>
 <summary>使用 pip 安装</summary>
 
@@ -46,6 +51,8 @@ nb plugin install nonebot-plugin-qqmusic-reco
 pip install nonebot-plugin-qqmusic-reco
 
 ```
+
+</details>
 
 ## ⚙️ 配置 (没啥用)
 
