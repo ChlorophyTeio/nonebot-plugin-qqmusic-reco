@@ -45,7 +45,7 @@ class ConfigManager:
             with open(self.cute_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"[QQMusicReco] 加载可爱话术失败: {e}")
+            logger.error(f"[QQMusicReco] 加载自定义话术失败: {e}")
             return []
 
     def load_all(self):
@@ -79,7 +79,7 @@ class ConfigManager:
             logger.error(f"[QQMusicReco] ❌ 加载群配置(group_config.json)失败: {e}。将保留内存中的旧配置。")
             # 不进行重置
 
-        # 3. 加载可爱话术
+        # 3. 加载自定义话术
         self.cute_config = self.load_cute_messages()
         logger.info(f"[QQMusicReco] 配置加载完成: {len(self.group_data)} 个群订阅, {len(self.reco_data)} 个推荐单。")
 

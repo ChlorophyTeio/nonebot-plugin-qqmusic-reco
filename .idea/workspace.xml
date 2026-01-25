@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="fixed: 移除了HIM" />
+    <list default="true" id="c9fdd962-3ba3-4c40-92d6-83045746e761" name="更改" comment="fixed: 移除了HIM">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/nonebot_plugin_qqmusic_reco/manager.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -88,7 +92,7 @@
       <workItem from="1769160803326" duration="59000" />
       <workItem from="1769325144225" duration="104000" />
       <workItem from="1769325262970" duration="437000" />
-      <workItem from="1769327441907" duration="1589000" />
+      <workItem from="1769327441907" duration="1786000" />
     </task>
     <task id="LOCAL-00001" summary="all">
       <option name="closed" value="true" />
@@ -186,7 +190,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769329016783</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="fixed: 移除了HIM">
+      <option name="closed" value="true" />
+      <created>1769329125298</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1769329125298</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

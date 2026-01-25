@@ -81,7 +81,7 @@ def refresh_jobs():
                     s = manager.group_data.get(g_id)
                     if not s: return
 
-                    # 获取可爱文案
+                    # 获取自定义文案
                     cute_msg = None
                     if config.qqmusic_cute_message:
                         try:
